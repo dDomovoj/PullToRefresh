@@ -31,6 +31,7 @@ open class PullToRefresh: NSObject {
     
     // MARK: - ScrollView & Observing
 
+    fileprivate var isModifyingInsetsInternally = false
     fileprivate var scrollViewDefaultInsets: UIEdgeInsets = .zero
     weak var scrollView: UIScrollView? {
         willSet {
@@ -107,7 +108,8 @@ open class PullToRefresh: NSObject {
             switch position {
             case .scrollTop:
                 let rect = scrollView.convert(scrollView.bounds, to: scrollView)
-                refreshView.frame = CGRect(x: rect.origin.x, y: rect.origin.y, width: rect.size.width, height: refreshView.bounds.height)
+                let y = min(rect.origin.y, -(scrollViewDefaultInsets.top + refreshView.bounds.height))
+                refreshView.frame = CGRect(x: rect.origin.x, y: y, width: rect.size.width, height: refreshView.bounds.height)
                 fallthrough
             case .top:
                 offset = previousOffset + scrollViewDefaultInsets.top
@@ -139,7 +141,7 @@ open class PullToRefresh: NSObject {
                 refreshView.frame = CGRect(x: 0, y: scrollView.contentSize.height, width: scrollView.bounds.width, height: refreshView.bounds.height)
             }
         } else if (keyPath == contentInsetKeyPath) {
-            if self.state == .initial {
+            if !isModifyingInsetsInternally {
                 scrollViewDefaultInsets = scrollView.contentInset
             }
           
@@ -222,12 +224,16 @@ private extension PullToRefresh {
                 switch self.position {
                 case .top, .scrollTop:
                     let insets = self.refreshView.frame.height + self.scrollViewDefaultInsets.top
+                    self.isModifyingInsetsInternally = true
                     scrollView.contentInset.top = insets
+                    self.isModifyingInsetsInternally = false
                     scrollView.contentOffset = CGPoint(x: scrollView.contentOffset.x, y: -insets)
                     
                 case .bottom:
                     let insets = self.refreshView.frame.height + self.scrollViewDefaultInsets.bottom
+                    self.isModifyingInsetsInternally = true
                     scrollView.contentInset.bottom = insets
+                    self.isModifyingInsetsInternally = false
                 }
             },
             completion: { _ in
