@@ -107,8 +107,7 @@ open class PullToRefresh: NSObject {
             switch position {
             case .scrollTop:
                 let rect = scrollView.convert(scrollView.bounds, to: scrollView)
-                print(rect.origin.y)
-                refreshView.frame = CGRect(x: 0, y: rect.origin.y, width: scrollView.bounds.width, height: refreshView.bounds.height)
+                refreshView.frame = CGRect(x: rect.origin.x, y: rect.origin.y, width: rect.size.width, height: refreshView.bounds.height)
                 fallthrough
             case .top:
                 offset = previousOffset + scrollViewDefaultInsets.top
