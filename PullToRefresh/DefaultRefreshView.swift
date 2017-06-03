@@ -27,6 +27,7 @@ class DefaultRefreshView: UIView {
         super.willMove(toSuperview: newSuperview)
         centerActivityIndicator()
         setupFrame(in: superview)
+        backgroundColor = .red
     }
 }
 
