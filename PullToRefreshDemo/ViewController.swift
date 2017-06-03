@@ -9,7 +9,7 @@
 import PullToRefresh
 import UIKit
 
-private let PageSize = 20
+private let PageSize = 5
 
 class ViewController: UIViewController {
     
@@ -18,7 +18,9 @@ class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        view.backgroundColor = UIColor.lightGray.withAlphaComponent(1.0)
+        tableView.backgroundColor = UIColor.yellow.withAlphaComponent(0.1)
+        tableView.contentInset = UIEdgeInsets(top: 240.0, left: 0.0, bottom: 0.0, right: 10.0)
         setupPullToRefresh()
     }
     

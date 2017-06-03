@@ -97,7 +97,12 @@ open class PullToRefresh: NSObject {
     fileprivate var previousScrollViewOffset: CGPoint = CGPoint.zero
     
     override open func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-        if (context == &KVOContext && keyPath == contentOffsetKeyPath && object as? UIScrollView == scrollView) {
+        guard context == &KVOContext && object as? UIScrollView == scrollView else {
+            super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
+            return
+        }
+        
+        if (keyPath == contentOffsetKeyPath) {
             var offset: CGFloat
             switch position {
             case .top:
@@ -125,11 +130,11 @@ open class PullToRefresh: NSObject {
                 }
             default: break
             }
-        } else if (context == &KVOContext && keyPath == contentSizeKeyPath && object as? UIScrollView == scrollView) {
+        } else if (keyPath == contentSizeKeyPath) {
             if case .bottom = position {
                 refreshView.frame = CGRect(x: 0, y: scrollView!.contentSize.height, width: scrollView!.bounds.width, height: refreshView.bounds.height)
             }
-        } else if (context == &KVOContext && keyPath == contentInsetKeyPath && object as? UIScrollView == scrollView) {
+        } else if (keyPath == contentInsetKeyPath) {
             if self.state == .initial {
                 scrollViewDefaultInsets = scrollView!.contentInset
             }
@@ -170,6 +175,8 @@ open class PullToRefresh: NSObject {
 extension PullToRefresh {
     
     func startRefreshing() {
+        guard let scrollView = scrollView else { return }
+        
         if self.state != .initial {
             return
         }
@@ -180,11 +187,11 @@ extension PullToRefresh {
             offsetY = -refreshView.frame.height - scrollViewDefaultInsets.top
             
         case .bottom:
-            offsetY = scrollView!.contentSize.height + refreshView.frame.height + scrollViewDefaultInsets.bottom - scrollView!.bounds.height
+            offsetY = scrollView.contentSize.height + refreshView.frame.height + scrollViewDefaultInsets.bottom - scrollView.bounds.height
         }
-        
-        scrollView?.setContentOffset(CGPoint(x: 0, y: offsetY), animated: true)
-        let delayTime = DispatchTime.now() + Double(Int64(0.27 * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)
+
+        scrollView.setContentOffset(CGPoint(x: scrollView.contentOffset.x, y: offsetY), animated: true)
+        let delayTime = DispatchTime.now() + 0.27
         DispatchQueue.main.asyncAfter(deadline: delayTime) { [weak self] in
             self?.state = .loading
         }
